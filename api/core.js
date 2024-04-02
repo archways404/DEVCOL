@@ -3,6 +3,7 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
+
 require('dotenv').config();
 
 const client = new MongoClient(process.env.DB_URI);
@@ -20,6 +21,19 @@ async function run() {
 	}
 }
 run().catch(console.dir);
+
+async function userExist(github_userid) {
+	try {
+		const database = client.db('userData');
+		const userid = database.collection('userid-github');
+		const query = { userid: github_userid };
+		const test = await userid.findOne(query);
+		console.log(test);
+	} finally {
+		// Ensures that the client will close when you finish/error
+		await client.close();
+	}
+}
 
 // Create Express app
 const app = express();
@@ -70,9 +84,17 @@ app.get('/auth/github', passport.authenticate('github'));
 app.get(
 	'/auth/github/callback',
 	passport.authenticate('github', { failureRedirect: '/login' }),
-	function (req, res) {
+	async function (req, res) {
 		// Successful authentication, redirect home.
 		console.log(req.user);
+		const testing = await userExist(req.user.id).catch(console.dir);
+		if (testing == null) {
+			console.log('User does not exist');
+			console.log(testing);
+		} else {
+			console.log('User exists');
+			console.log(testing);
+		}
 		res.redirect('/');
 	}
 );
