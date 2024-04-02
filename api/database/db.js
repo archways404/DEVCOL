@@ -42,4 +42,23 @@ async function createUser(github_userid) {
 	}
 }
 
-module.exports = { userExist, createUser };
+async function getAllUsers() {
+	try {
+		await client.connect();
+		console.log('Connected to the database');
+
+		const database = client.db('userData');
+		const useridCollection = database.collection('useridGithub');
+		// Pass an empty query object to find all documents
+		const cursor = useridCollection.find({});
+		// Convert the cursor to an array to retrieve all documents
+		const users = await cursor.toArray();
+		// Log each userid
+		users.forEach((user) => console.log(user.userid));
+	} finally {
+		// Ensures that the client will close when you finish/error
+		await client.close();
+	}
+}
+
+module.exports = { userExist, createUser, getAllUsers };
