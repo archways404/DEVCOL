@@ -4,6 +4,8 @@ const session = require('express-session');
 const passport = require('passport');
 const GitHubStrategy = require('passport-github').Strategy;
 
+const { userExist, createUser } = require('./components/db');
+
 require('dotenv').config();
 
 const client = new MongoClient(process.env.DB_URI);
@@ -14,56 +16,19 @@ async function run() {
 		console.log('Connected to the database');
 
 		const database = client.db('userData');
-		const userid = database.collection('userid-github');
-		const query = { userid: 'test2' };
-		const test = await userid.findOne(query);
-		console.log(test);
+		const useridCollection = database.collection('useridGithub');
+		// Pass an empty query object to find all documents
+		const cursor = useridCollection.find({});
+		// Convert the cursor to an array to retrieve all documents
+		const users = await cursor.toArray();
+		// Log each userid
+		users.forEach((user) => console.log(user.userid));
 	} finally {
 		// Ensures that the client will close when you finish/error
 		await client.close();
 	}
 }
 run().catch(console.dir);
-
-async function userExist(github_userid) {
-	try {
-		await client.connect();
-		console.log('Connected to the database');
-		const database = client.db('userData');
-		const useridCollection = database.collection('useridGithub');
-		const query = { userid: github_userid };
-		const user = await useridCollection.findOne(query);
-		console.log(user);
-		return user; // Return the found user or null
-	} catch (error) {
-		console.error('Error in userExist:', error);
-	} finally {
-		// Consider whether you need to close the connection here
-	}
-}
-
-async function createUser(github_userid) {
-	try {
-		await client.connect();
-		console.log('Connected to the database');
-		const database = client.db('userData');
-		const userid = database.collection('useridGithub');
-		const newUser = { userid: github_userid };
-		const result = await userid.insertOne(newUser);
-		console.log(
-			`New listing created with the following id: ${result.insertedId}`
-		);
-		const userCollection = database.collection('userCollection');
-		const newCollection = { userid: github_userid };
-		const response = await userCollection.insertOne(newCollection);
-		console.log(
-			`New listing created with the following id: ${response.insertedId}`
-		);
-	} finally {
-		// Ensures that the client will close when you finish/error
-		await client.close();
-	}
-}
 
 // Create Express app
 const app = express();
@@ -99,7 +64,10 @@ app.use(
 		secret: 'your_secret_key',
 		resave: false,
 		saveUninitialized: true,
-		cookie: { secure: false }, // set to true if using https
+		cookie: {
+			secure: false, // set to true if using https
+			maxAge: 3600000, // set to true if using https
+		},
 	})
 );
 
@@ -129,9 +97,25 @@ app.get(
 
 // Define a logout route
 app.get('/logout', function (req, res) {
-	req.logout();
-	res.redirect('/');
+	// Passport's logout function to clear the authentication
+	req.logout(function (err) {
+		if (err) {
+			return next(err);
+		}
+		// Destroy the session data
+		req.session.destroy(function (err) {
+			if (err) {
+				console.log(
+					'Error : Failed to destroy the session during logout.',
+					err
+				);
+			}
+			// The response should occur within this callback to ensure the session is destroyed prior to redirecting
+			res.redirect('/');
+		});
+	});
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
