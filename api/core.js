@@ -10,6 +10,9 @@ const client = new MongoClient(process.env.DB_URI);
 
 async function run() {
 	try {
+		await client.connect();
+		console.log('Connected to the database');
+
 		const database = client.db('userData');
 		const userid = database.collection('userid-github');
 		const query = { userid: 'test2' };
@@ -24,11 +27,30 @@ run().catch(console.dir);
 
 async function userExist(github_userid) {
 	try {
+		await client.connect();
+		console.log('Connected to the database');
 		const database = client.db('userData');
 		const userid = database.collection('userid-github');
 		const query = { userid: github_userid };
 		const test = await userid.findOne(query);
 		console.log(test);
+	} finally {
+		// Ensures that the client will close when you finish/error
+		await client.close();
+	}
+}
+
+async function createUser(github_userid) {
+	try {
+		await client.connect();
+		console.log('Connected to the database');
+		const database = client.db('userData');
+		const userid = database.collection('userid-github');
+		const newUser = { userid: github_userid };
+		const result = await userid.insertOne(newUser);
+		console.log(
+			`New listing created with the following id: ${result.insertedId}`
+		);
 	} finally {
 		// Ensures that the client will close when you finish/error
 		await client.close();
@@ -88,9 +110,11 @@ app.get(
 		// Successful authentication, redirect home.
 		console.log(req.user);
 		const testing = await userExist(req.user.id).catch(console.dir);
+		console.log(req.user.id);
 		if (testing == null) {
 			console.log('User does not exist');
 			console.log(testing);
+			await createUser(req.user.id);
 		} else {
 			console.log('User exists');
 			console.log(testing);
