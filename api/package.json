@@ -1,0 +1,21 @@
+{
+	"name": "devcol-api",
+	"version": "1.0.0",
+	"description": "devcol-api",
+	"main": "core.js",
+	"scripts": {
+		"start": "node core.js",
+		"dev": "nodemon core.js"
+	},
+	"author": "archways404",
+	"license": "MIT",
+	"dependencies": {
+		"connect-mongodb-session": "^5.0.0",
+		"dotenv": "^16.4.5",
+		"express": "^4.19.2",
+		"express-session": "^1.18.0",
+		"mongodb": "^6.5.0",
+		"passport": "^0.7.0",
+		"passport-github": "^1.1.0"
+	}
+}
