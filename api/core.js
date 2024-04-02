@@ -9,12 +9,11 @@ const client = new MongoClient(process.env.DB_URI);
 
 async function run() {
 	try {
-		const database = client.db('sample_mflix');
-		const movies = database.collection('movies');
-		// Query for a movie that has the title 'Back to the Future'
-		const query = { title: 'Back to the Future' };
-		const movie = await movies.findOne(query);
-		console.log(movie);
+		const database = client.db('userData');
+		const userid = database.collection('userid-github');
+		const query = { userid: 'test2' };
+		const test = await userid.findOne(query);
+		console.log(test);
 	} finally {
 		// Ensures that the client will close when you finish/error
 		await client.close();
@@ -53,9 +52,10 @@ passport.deserializeUser(function (obj, cb) {
 // Use express-session middleware for session handling
 app.use(
 	session({
-		secret: 'your_session_secret', // Replace with a session secret of your own
+		secret: 'your_secret_key',
 		resave: false,
 		saveUninitialized: true,
+		cookie: { secure: false }, // set to true if using https
 	})
 );
 
