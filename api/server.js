@@ -14,6 +14,7 @@ require('dotenv').config();
 // MONGODB CONNECTION
 const client = new MongoClient(process.env.DB_URI);
 
+// MIDDLEWARE
 app.use(session);
 app.use(passport.initialize());
 app.use(passport.session());
