@@ -17,6 +17,7 @@ const client = new MongoClient(process.env.DB_URI);
 app.use(session);
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(express.json());
 
 app.use(authRoutes);
 app.use(hookRoutes);
