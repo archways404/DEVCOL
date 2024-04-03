@@ -1,3 +1,4 @@
+// TOP LEVEL IMPORTS
 const { MongoClient } = require('mongodb');
 const express = require('express');
 const passport = require('./config/passport');
