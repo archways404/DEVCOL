@@ -3,6 +3,7 @@ const express = require('express');
 const passport = require('./config/passport');
 const session = require('./config/session');
 const authRoutes = require('./routes/authRoutes');
+const hookRoutes = require('./routes/hookRoutes');
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use(authRoutes);
+app.use(hookRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
