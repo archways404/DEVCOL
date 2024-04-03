@@ -21,7 +21,7 @@ router.post('/webhook', (req, res) => {
 		req.body.head_commit.message.startsWith('Merge pull request');
 
 	if (ref === 'refs/heads/main' && isMergeCommit) {
-		exec(`git pull && npm install && npm run dev`, (error, stdout, stderr) => {
+		exec(`git pull && npm install`, (error, stdout, stderr) => {
 			if (error) {
 				console.error(`exec error: ${error}`);
 				return res.status(500).send('Server Error');
