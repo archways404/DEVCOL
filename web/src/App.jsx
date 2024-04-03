@@ -1,24 +1,73 @@
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 function App() {
-	const navigate = useNavigate();
+	const [userData, setUserData] = useState(null);
 
-	const handleClick = () => {
+	useEffect(() => {
+		fetch('http://localhost:3000/api/userdata', {
+			method: 'GET',
+			credentials: 'include',
+		})
+			.then((response) => {
+				if (!response.ok) {
+					throw new Error(`HTTP error! Status: ${response.status}`);
+				}
+				return response.json();
+			})
+			.then((data) => {
+				setUserData(data.user);
+			})
+			.catch((error) => {
+				console.error('Error fetching user data:', error);
+			});
+	}, []);
+
+	const handleLogin = () => {
 		window.location.assign('http://localhost:3000/auth/github');
+	};
+
+	const handleLogout = () => {
+		fetch('http://localhost:3000/logout', { credentials: 'include' })
+			.then((response) => {
+				if (response.ok) {
+					setUserData(null);
+					// Optionally, redirect to the home page or refresh
+					//window.location.href = 'http://localhost:5173/';
+				} else {
+					console.error('Logout failed');
+				}
+			})
+			.catch((error) => {
+				console.error('Error during logout:', error);
+			});
 	};
 
 	return (
 		<>
-			<h1>Vite + React</h1>
-			<div className="card">
-				<button onClick={handleClick}>data is {}</button>
-				<p>
-					Edit <code>src/App.jsx</code> and save to test HMR
-				</p>
-			</div>
-			<p className="read-the-docs">
-				Click on the Vite and React logos to learn more
-			</p>
+			{userData ? (
+				<div>
+					<p>ID: {userData.id}</p>
+					<p>username: {userData.username}</p>
+					<p>
+						Profile URL:{' '}
+						<a
+							href={userData.profileUrl}
+							target="_blank"
+							rel="noopener noreferrer">
+							{userData.profileUrl}
+						</a>
+					</p>
+					{userData.photos && userData.photos.length > 0 && (
+						<img
+							src={userData.photos[0].value}
+							alt="User avatar"
+						/>
+					)}
+					<button onClick={handleLogout}>Logout</button>
+				</div>
+			) : (
+				<button onClick={handleLogin}>Sign in with GitHub</button>
+			)}
 		</>
 	);
 }

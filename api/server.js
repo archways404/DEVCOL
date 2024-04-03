@@ -1,15 +1,23 @@
 // TOP LEVEL IMPORTS
 const { MongoClient } = require('mongodb');
 const express = require('express');
+const cors = require('cors');
 const passport = require('./config/passport');
 const session = require('./config/session');
 const authRoutes = require('./routes/authRoutes');
 const hookRoutes = require('./routes/hookRoutes');
 
-const app = express();
-
 // .ENV VARIABLES
 require('dotenv').config();
+
+const app = express();
+
+app.use(
+	cors({
+		origin: 'http://localhost:5173', // or wherever your frontend is hosted
+		credentials: true, // to support credentials like cookies
+	})
+);
 
 // MONGODB CONNECTION
 const client = new MongoClient(process.env.DB_URI);

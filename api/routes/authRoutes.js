@@ -16,25 +16,39 @@ router.get(
 		} else {
 			console.log('User exists');
 		}
-		res.redirect('/');
+
+		console.log(req.session); // Check if the session is set
+
+		res.redirect('http://localhost:5173/');
 	}
 );
 
-router.get('/logout', function (req, res, next) {
+router.get('/logout', function (req, res) {
 	req.logout(function (err) {
 		if (err) {
-			return next(err);
+			console.error('Error during logout:', err);
+			return res.status(500).send('Error during logout');
 		}
 		req.session.destroy(function (err) {
 			if (err) {
-				console.log(
-					'Error : Failed to destroy the session during logout.',
-					err
-				);
+				console.error('Error destroying session:', err);
+				return res.status(500).send('Error destroying session');
 			}
-			res.redirect('/');
+			res.clearCookie('connect.sid'); // Clear the session cookie
+			res.status(200).send('Logged out');
 		});
 	});
+});
+
+router.get('/api/userdata', (req, res) => {
+	console.log('Authenticated:', req.isAuthenticated());
+	console.log('User:', req.user);
+
+	if (req.isAuthenticated()) {
+		res.json({ user: req.user });
+	} else {
+		res.status(401).send('User not authenticated');
+	}
 });
 
 module.exports = router;
