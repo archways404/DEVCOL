@@ -15,19 +15,27 @@ router.post('/webhook', (req, res) => {
 		return res.status(401).send('Mismatched signatures');
 	}
 
-	exec(`git pull && npm install`, (error, stdout, stderr) => {
-		if (error) {
-			console.error(`exec error: ${error}`);
-			return res.status(500).send('Server Error');
-		}
+  const ref = req.body.ref; // The branch that was pushed to
+	const isMerged = req.body.pull_request && req.body.pull_request.merged;
 
-		console.log(`stdout: ${stdout}`);
-		console.error(`stderr: ${stderr}`);
+	if (ref === 'refs/heads/main' && isMerged) {
+		exec(`git pull && npm install`, (error, stdout, stderr) => {
+			if (error) {
+				console.error(`exec error: ${error}`);
+				return res.status(500).send('Server Error');
+			}
 
-		res.status(200).send('Updated successfully');
+			console.log(`stdout: ${stdout}`);
+			console.error(`stderr: ${stderr}`);
 
-		// Use a process manager to restart the server
-	});
+			res.status(200).send('Updated successfully');
+
+			// Use a process manager to restart the server
+		});
+	} else {
+		console.log('Not a merge to the main branch, skipping.');
+		return res.status(200).send('Not a merge to the main branch, skipping.');
+	}
 });
 
 module.exports = router;
