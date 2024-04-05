@@ -4,6 +4,7 @@
 	"scripts": {
 		"install": "concurrently \"cd api && npm install\" \"cd web && npm install\"",
 		"dev": "concurrently \"cd api && npm run dev\" \"cd web && npm run dev\"",
+		"dev:golang": "concurrently \"cd golang && go run main.go\" \"cd web && npm run dev\"",
 		"dev:api": " cd api && npm run dev ",
 		"dev:web": "cd web && npm run dev"
 	},
